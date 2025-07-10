@@ -4,6 +4,7 @@ const dateUtil = require('../../utils/dateUtil');
 const tabBarManager = require('../../utils/tabBarManager');
 const app = getApp()
 
+
 // 自定义对象展开函数以兼容不支持spread操作符的环境
 const spread = function(obj1, obj2) {
   let result = {};
@@ -62,7 +63,41 @@ Page({
     needRefresh: false,         // 是否需要刷新数据
     pageReady: false, // 标记页面是否准备好
     showWeightHistoryDialog: false, // 是否显示体重历史记录对话框
-    weightHistoryRecords: []    // 体重历史记录列表
+    weightHistoryRecords: [],    // 体重历史记录列表
+
+    howModal: false, // 控制弹窗显示/隐藏
+    currentDiet: {}, // 当前显示的饮食知识
+    // 饮食知识数据（与轮播项一一对应）
+    dietList: [
+      {
+        title: "科学饮食指南：从早餐到晚餐的智慧",
+        content: "科学饮食应遵循「三餐均衡、营养全面」原则：\n1. 早餐要吃好：推荐全谷物（燕麦、全麦面包）+ 优质蛋白（鸡蛋、牛奶）+ 蔬果（番茄、黄瓜），为上午提供持久能量。\n2. 午餐要吃饱：主食（米饭、杂粮饭）+ 优质蛋白（瘦肉、鱼虾、豆类）+ 蔬菜（深色蔬菜占一半），注意少油少盐。\n3. 晚餐要吃少：以清淡易消化为主，避免过量碳水和油脂，可选择杂粮粥、清蒸鱼搭配绿叶菜，睡前3小时完成进食。\n此外，每天需保证1500-2000ml饮水量，少喝含糖饮料，烹饪方式多采用蒸、煮、炖，减少油炸、烧烤。"
+      },
+      {
+        title: "夏季饮食：清热解暑的搭配技巧",
+        content: "夏季饮食核心是「清热利湿、补充水分」：\n1. 多吃清热食材：绿豆（煮汤）、苦瓜（清炒或凉拌）、冬瓜（做汤）、西瓜（适量食用补充水分），帮助缓解暑热。\n2. 补充电解质：高温出汗多，可喝淡盐水或自制柠檬水（加少量盐），避免电解质紊乱。\n3. 饮食宜清淡：少吃辛辣、油腻食物，避免加重肠胃负担，推荐丝瓜炒蛋、荷叶粥、凉拌海带等清爽菜品。\n4. 注意饮食卫生：夏季食物易变质，生熟食材分开存放，剩菜及时冷藏，食用前彻底加热。"
+      },
+      {
+        title: "减脂期饮食：吃饱又不胖的秘密",
+        content: "减脂期饮食关键是「热量缺口+营养充足」，避免过度节食：\n1. 主食选低GI：用糙米、藜麦、玉米替代部分白米白面，延缓血糖上升，增加饱腹感。\n2. 蛋白要充足：每天摄入1.2-1.6g/kg体重的蛋白质（如鸡胸肉、鱼虾、豆腐），减少肌肉流失。\n3. 多吃膳食纤维：绿叶菜（菠菜、西兰花）、菌菇、杂豆等，热量低且饱腹感强。\n4. 烹饪控热量：少油少糖，多用香料（黑胡椒、柠檬汁）调味，避免沙拉酱、红烧等高热量做法。\n5. 三餐分配：早餐占30%、午餐40%、晚餐30%，晚餐尽量在睡前4小时吃完。"
+      }
+    ]
+  },
+
+   // 显示弹窗：根据点击的索引获取对应内容
+   showPopup(e) {
+    const index = e.currentTarget.dataset.index; // 获取轮播项的索引
+    this.setData({
+      showModal: true,
+      currentDiet: this.data.dietList[index] // 赋值对应的数据
+    });
+  },
+
+  // 隐藏弹窗
+  hidePopup() {
+    this.setData({
+      showModal: false
+    });
   },
 
   onLoad: function () {

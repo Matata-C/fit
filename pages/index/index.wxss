@@ -1,9 +1,191 @@
 /**index.wxss**/
 .container {
   padding: 24px 16px 16px 16px;
-  background: linear-gradient(135deg, #FFF6D1 0%, #FFD600 100%);
   min-height: 100vh;
 }
+
+/* 顶部栏样式 */
+.header {
+  margin-top: -15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 10px;
+  background-color: #eee;
+}
+.header-left .dropdown {
+  display: flex;
+  align-items: center;
+}
+.dropdown-text {
+  font-size: 14px;
+  color: #333;
+  margin-right: 5px;
+}
+.dropdown-icon {
+  width: 12px;
+  height: 12px;
+}
+.header-middle {
+  display: flex;
+  align-items: center;
+}
+.arrow-left, .arrow-right {
+  width: 16px;
+  height: 16px;
+  margin: 0 8px;
+}
+.date-text {
+  font-size: 14px;
+  color: #333;
+}
+.header-right .calendar-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* 步数卡片样式 */
+.step-card {
+  background-color: #FFD700;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.step-info {
+  display: flex;
+  flex-direction: column;
+}
+.step-date {
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 4px;
+}
+.step-label {
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 8px;
+}
+.step-number {
+  font-size: 24px;
+  font-weight: bold;
+  color: #000;
+  margin-bottom: 4px;
+}
+.step-slogan {
+  font-size: 12px;
+  color: #666;
+}
+.step-icon {
+  width: 100px;
+  height: 100px;
+}
+
+/* 饮食建议区域样式 */
+
+.diet-content{
+  margin-top: 50px;
+}
+.diet-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10px;
+  margin-left: 5px;
+}
+/* 轮播图容器样式 */
+.diet-swiper {
+  height: 180px; /* 可根据图片和布局调整高度，要容纳 diet-item */
+}
+
+.diet-item {
+  border-radius: 10px;
+  height: 160px;
+  margin-bottom: 16px;
+  position: relative; /* 关键：开启相对定位 */
+  overflow: hidden; /* 防止文字超出容器 */
+  /* 增加点击反馈 */
+  cursor: pointer;
+}
+
+.foods {
+  margin-top: 6px;
+  width: 100%;
+  height: 150px;
+  border-radius: 8px;
+  display: block; /* 消除图片底部间隙 */
+}
+
+/* 文字容器：绝对定位到图片左下方 */
+.diet-text-container {
+  position: absolute; /* 基于父容器定位 */
+  left: 10px; /* 左间距 */
+  bottom: 15px; /* 底部间距 */
+  z-index: 10; /* 确保文字在图片上方显示 */
+}
+
+.diet-content {
+  color: rgb(255, 255, 255); /* 文字颜色（白色更适配图片背景） */
+  font-size: 15px; /* 文字大小 */
+  font-weight: 650; /* 文字粗细 */
+  text-shadow: 0 5px 5px rgba(0,0,0,0.3); /* 文字阴影，增强可读性 */
+}
+
+/* 弹窗样式 */
+/* 遮罩层 */
+.popup-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999; /* 遮罩层在底层 */
+}
+/* 弹窗容器 */
+.popup-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 85%;
+  max-height: 70vh; /* 限制最大高度，超出可滚动 */
+  background-color: white;
+  border-radius: 12px;
+  padding: 20px 15px;
+  z-index: 1000; /* 弹窗在遮罩层上方 */
+  overflow-y: auto; /* 内容过多时可滚动 */
+}
+/* 弹窗标题 */
+.popup-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+/* 弹窗内容 */
+.popup-content {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6; /* 行高增加可读性 */
+}
+/* 关闭按钮 */
+.popup-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 20px;
+  color: #999;
+  cursor: pointer;
+}
+.popup-close:active {
+  color: #333; /* 点击时变色反馈 */
+}
+
 .section-title {
   font-size: 22px;
   font-weight: bold;
@@ -89,12 +271,12 @@
 }
 
 .target-bar {
-  background-color: #1E88E5; /* 蓝色 */
+  background-color: #FFD700; /* 蓝色 */
   z-index: 2;
 }
 
 .actual-bar {
-  background-color: #4CAF50; /* 绿色 */
+  background-color: #FFD700; /* 绿色 */
   z-index: 3;
 }
 
@@ -261,7 +443,7 @@
 }
 
 .save-button {
-  background-color: #4CAF50;
+  background-color: #FFD700;
   color: white;
 }
 
@@ -655,7 +837,7 @@
 
 .add-btn {
   font-size: 28rpx;
-  color: #4caf50;
+  color: #FFD700;
 }
 
 .food-list,
@@ -829,7 +1011,7 @@
   top: 0;
   left: 0;
   height: 100%;
-  background: linear-gradient(90deg, #4CAF50 0%, #8BC34A 100%);
+  background: #FFD700;
   border-radius: 12rpx;
   transition: width 0.5s ease;
 }
@@ -888,7 +1070,7 @@
 
 .weight-progress-bar {
   height: 100%;
-  background-color: #4CAF50; /* 绿色 */
+  background-color: #FFD700; /* 绿色 */
   border-radius: 8rpx;
   transition: width 0.5s ease;
 }
@@ -989,7 +1171,7 @@
 }
 
 .progress-bar.actual {
-  background-color: #4CAF50; /* 绿色 - 实际消耗 */
+  background-color: #FFD700; /* 绿色 - 实际消耗 */
 }
 
 /* 目标消耗数值显示 */
@@ -1001,7 +1183,7 @@
 }
 
 .progress-target .progress-label {
-  color: #1E88E5; /* 蓝色 - 目标消耗 */
+  color: #FFD700; /* 蓝色 - 目标消耗 */
   font-weight: 500;
 }
 
@@ -1072,7 +1254,7 @@
 }
 
 .actual-color {
-  background-color: #4CAF50; /* 绿色 - 实际消耗 */
+  background-color: #FFD700; /* 绿色 - 实际消耗 */
 }
 
 .explanation-text {
@@ -1086,7 +1268,7 @@
 }
 
 .progress-bar.actual {
-  background-color: #4CAF50; /* 绿色 - 实际消耗 */
+  background-color: #FFD700; /* 绿色 - 实际消耗 */
 }
 
 /* 图例色块样式 */
@@ -1099,7 +1281,7 @@
 }
 
 .explanation-color.actual-color {
-  background-color: #4CAF50; /* 绿色 - 实际消耗 */
+  background-color: #FFD700; /* 绿色 - 实际消耗 */
 }
 
 /* 体重记录按钮 */
@@ -1107,7 +1289,7 @@
   width: 100%;
   height: 90rpx;
   line-height: 90rpx;
-  background-color: #1aad19;
+  background-color: #FFD700;
   color: #fff;
   text-align: center;
   border-radius: 45rpx;
@@ -1173,7 +1355,7 @@
   right: 20rpx;
   width: 120rpx;
   height: 120rpx;
-  background-color: #1aad19;
+  background-color: #FFD700;
   color: #fff;
   border-radius: 50%;
   display: flex;
@@ -1243,7 +1425,7 @@
 .actual-bar {
   position: absolute;
   height: 100%;
-  background-color: #1aad19;
+  background-color: #FFD700;
   border-radius: 9rpx;
 }
 
@@ -1322,16 +1504,16 @@
 }
 
 .exercise-btn {
-  background-color: #4caf50;
-  color: white;
+  background-color: #FFD700;
+  color: rgb(51, 51, 51);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .food-btn {
-  background-color: #ff9800;
-  color: white;
+  background-color: #FFD700;
+  color: rgb(51, 51, 51);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1404,7 +1586,7 @@
 }
 
 .confirm {
-  background-color: #1aad19;
+  background-color: #FFD700;
   color: #fff;
 }
 
@@ -1464,7 +1646,7 @@
   width: 80rpx;
   height: 80rpx;
   border: 6rpx solid #f3f3f3;
-  border-top: 6rpx solid #4CAF50;
+  border-top: 6rpx solid #FFD700;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 20rpx;
@@ -1487,20 +1669,30 @@
   margin: 20rpx 0;
 }
 
-.weight-record-btn, .weight-history-btn {
-  background-color: #4CAF50;
-  color: white;
+.weight-record-btn {
+  background-color: #FFD700;
+  color: rgb(51, 51, 51);
   text-align: center;
-  padding: 15rpx 0;
-  border-radius: 8rpx;
-  font-size: 30rpx;
+  line-height: 90rpx;
+  border-radius: 45rpx;
+  font-size: 32rpx;
+  font-weight: bold;
   flex: 1;
   margin: 0 10rpx;
   box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
 }
 
 .weight-history-btn {
-  background-color: #2196F3;
+  background-color: #FFD700;
+  color: rgb(51, 51, 51);
+  text-align: center;
+  line-height: 90rpx;
+  border-radius: 45rpx;
+  font-size: 32rpx;
+  font-weight: bold;
+  flex: 1;
+  margin: 0 10rpx;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
 }
 
 /* 历史记录对话框样式 */

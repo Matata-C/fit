@@ -15,75 +15,60 @@
       <view class="loading-spinner"></view>
       <text class="loading-text">数据加载中...</text>
     </view>
-    
+
+    <!-- 顶部核心运动数据卡片 -->
+    <exercise-core-data
+      date="{{coreData.date}}"
+      steps="{{coreData.steps}}"
+      stepsPercent="{{coreData.stepsPercent}}"
+      duration="{{coreData.duration}}"
+      durationPercent="{{coreData.durationPercent}}"
+      calories="{{coreData.calories}}"
+      caloriesPercent="{{coreData.caloriesPercent}}"
+      weight="{{coreData.weight}}"
+      weightPercent="{{coreData.weightPercent}}"
+    />
+
     <view class="{{isLoading || isRepairing ? 'hidden-content' : ''}}">
-      <view class="title-section">
-        <view class="title">体重变化趋势</view>
+      <!-- 本周运动数据折线图 -->
+      <view class="cute-yellow-border">
+        <view class="calendar-title-pink">
+          本周运动量数据 <text class="section-icon">🏃‍♂️</text>
+        </view>
+        <exercise-line-chart
+          dateLabels="{{exerciseChart.dateLabels}}"
+          stepsData="{{exerciseChart.stepsData}}"
+          durationData="{{exerciseChart.durationData}}"
+          caloriesData="{{exerciseChart.caloriesData}}"
+          height="220"
+        />
       </view>
 
-      <view class="tab-section">
-        <view class="tab-item {{period === 'week' ? 'active' : ''}}" bindtap="switchPeriod" data-period="week">
-          <text>一周</text>
-        </view>
-        <view class="tab-item {{period === 'month' ? 'active' : ''}}" bindtap="switchPeriod" data-period="month">
-          <text>一月</text>
-        </view>
-        <view class="tab-item {{period === 'all' ? 'active' : ''}}" bindtap="switchPeriod" data-period="all">
-          <text>全部</text>
-        </view>
+      <!-- 本月运动数据饼图 -->
+      <view class="cute-yellow-border">
+        <exercise-pie-chart pieData="{{pieData}}" />
       </view>
 
-      <view class="chart-section">
-        <block wx:if="{{hasData}}">
-          <view class="chart-card">
-            <view class="chart-title">体重变化趋势</view>
-            <weight-chart dateLabels="{{chartOptions.dateLabels}}" weightData="{{chartOptions.weightData}}" height="{{chartOptions.height}}"></weight-chart>
-            <view class="weight-range" wx:if="{{weightData.length > 0}}">
-              <view class="weight-range-item">
-                <text class="range-label">起始</text>
-                <text class="range-value">{{Math.max.apply(null, weightData)}}kg</text>
-              </view>
-              <view class="weight-range-item">
-                <text class="range-label">最新</text>
-                <text class="range-value">{{Math.min.apply(null, weightData)}}kg</text>
-              </view>
-            </view>
-          </view>
-        </block>
-        <block wx:else>
-          <view class="no-data">
-            <text>暂无体重记录数据</text>
-            <view class="no-data-tip">在首页记录您的体重后再来查看</view>
-          </view>
-        </block>
+      <!-- 拍照识别入口 -->
+      <view class="cute-yellow-border photo-recognition-entry" bindtap="onPhotoRecognize">
+        <view class="photo-icon">📷</view>
+        <view class="photo-text">拍照识别食物热量</view>
       </view>
 
-      <view class="stats-section" wx:if="{{hasData}}">
-        <view class="stat-item">
-          <view class="stat-value">{{statistics.totalLost}}kg</view>
-          <view class="stat-label">总计减重</view>
+      <!-- 运动小贴士 -->
+      <view class="cute-yellow-border tips-section">
+        <view class="tip-title">
+          <text class="tip-icon">💡</text> 运动小贴士
         </view>
-        <view class="stat-item">
-          <view class="stat-value">{{statistics.avgSpeed}}kg/天</view>
-          <view class="stat-label">平均减重速度</view>
-        </view>
-        <view class="stat-item">
-          <view class="stat-value">{{statistics.daysToGoal}}天</view>
-          <view class="stat-label">预计达到目标</view>
-        </view>
-      </view>
-
-      <view class="tips-section">
-        <view class="tip-title">减重小贴士</view>
         <view class="tip-content">
           <view class="tip-item">
-            <text class="tip-text">健康减重速度为每周0.5-1kg，过快的减重可能不利于健康。</text>
+            <text class="tip-text">适量运动有助于身心健康，建议每周至少进行150分钟中等强度运动。</text>
           </view>
           <view class="tip-item">
-            <text class="tip-text">合理饮食和适量运动是维持健康体重的关键。</text>
+            <text class="tip-text">运动前做好热身，运动后注意拉伸，预防受伤。</text>
           </view>
           <view class="tip-item">
-            <text class="tip-text">保持记录的习惯有助于长期管理体重。</text>
+            <text class="tip-text">保持运动习惯，选择自己喜欢的运动方式更容易坚持哦！</text>
           </view>
         </view>
       </view>

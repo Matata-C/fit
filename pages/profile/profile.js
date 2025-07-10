@@ -4,9 +4,10 @@ const app = getApp()
 
 Page({
   data: {
+    isLoggedIn: false,
     userInfo: {
       avatar: '/images/default-avatar.svg',
-      nickname: '用户'
+      nickName: '点击登录'
     },
     stats: {
       recordDays: 0,
@@ -32,64 +33,137 @@ Page({
   },
 
   onLoad: function(options) {
-    try {
-      this.loadUserInfo();
-      this.loadUserStats();
-      this.loadGoalData();
-    } catch (e) {
-      console.error('加载个人资料页面数据失败：', e);
-    }
-    
-    // 设置TabBar选中状态为个人页(索引2)
-    tabBarManager.initTabBarForPage(2);
-  },
-  
-  onShow: function() {
-    // 检查是否有数据更新标志
-    try {
-      const dataUpdated = wx.getStorageSync('dataUpdated');
-      const lastUpdate = wx.getStorageSync('lastProfileUpdate') || 0;
-      
-      // 如果有新的数据更新，或页面设置了刷新标志，强制刷新
-      if ((dataUpdated && dataUpdated > lastUpdate) || this.data.needRefresh) {
-        console.log('检测到数据更新，刷新个人页面数据');
-        
-        // 更新最后刷新时间
-        wx.setStorageSync('lastProfileUpdate', new Date().getTime());
-        
-        // 重置刷新标志
-        this.setData({ needRefresh: false });
-        
-        // 重新加载所有数据
-        this.loadUserInfo();
-        this.loadUserStats();
-        this.loadGoalData();
-      } else {
-        // 常规刷新 - 每次显示页面都至少刷新用户统计数据
-        this.loadUserInfo();
-        this.loadUserStats();
-        this.loadGoalData();
+    // 初始化默认状态
+    this.setData({
+      isLoggedIn: false,
+      userInfo: {
+        avatarUrl: '/images/default-avatar.svg',
+        nickName: '点击登录'
+      },
+      stats: {
+        recordDays: 0,
+        weightLost: '0.0',
+        daysToGoal: 0
       }
-    } catch (e) {
-      console.error('检查数据更新失败:', e);
-      // 出错时仍然执行常规刷新
-      this.loadUserInfo();
+    });
+
+    wx.removeStorageSync('isLoggedIn');
+
+     // 检查实际授权状态
+    this.checkRealAuthStatus();
+
+    // 检查微信登录状态
+    this.checkLoginStatus();
+    
+    // 加载用户统计数据
+    this.loadUserStats();
+    
+    // 加载目标设置数据
+    this.loadGoalData();
+    
+    // 初始化TabBar
+    this.initTabBar();
+  },
+
+  onShow: function() {
+    // 每次显示都检查登录状态（防止其他页面修改后状态不同步）
+    this.checkLoginStatus();
+    
+    // 检查数据是否需要刷新
+    const lastUpdateTime = wx.getStorageSync('lastProfileUpdate') || 0;
+    const now = new Date().getTime();
+    
+    // 如果超过1小时未更新，或者有强制刷新标志，则重新加载数据
+    if (now - lastUpdateTime > 3600000 || this.data.needRefresh) {
       this.loadUserStats();
       this.loadGoalData();
+      wx.setStorageSync('lastProfileUpdate', now);
+      this.setData({ needRefresh: false });
     }
-    
-    // 确保TabBar选中个人页
-    tabBarManager.setSelectedTab(2);
+  },
+
+  //授权状态检查
+  checkLoginStatus: function() {
+    app.verifyLoginStatus().then(isLoggedIn => {
+      this.setData({
+        isLoggedIn,
+        userInfo: isLoggedIn ? app.globalData.userInfo : this.data.userInfo
+      });
+    });
+  },
+
+  // 点击用户信息区域
+  onUserInfoTap: function() {
+    if (this.data.isLoggedIn) {
+      wx.navigateTo({ url: '/pages/userInfo/userInfo' });
+      return;
+    }
+
+    // 显示明确授权弹窗
+    wx.showModal({
+      title: '需要授权',
+      content: '请授权获取您的用户信息',
+      confirmText: '去授权',
+      success: (res) => {
+        if (res.confirm) {
+          this.requestUserAuthorization();
+        }
+      }
+    });
+  },
+
+  //检查登录状态
+  checkLoginStatus: function() {
+    const that = this;
+    wx.getSetting({
+      success(res) {
+        if (res.authSetting['scope.userInfo']) {
+          // 已经授权，可以直接获取用户信息
+          wx.getUserInfo({
+            success: function(res) {
+              that.setData({
+                isLoggedIn: true,
+                userInfo: {
+                  avatarUrl: res.userInfo.avatarUrl,
+                  nickName: res.userInfo.nickName
+                }
+              });
+              // 保存到全局和存储
+              app.globalData.userInfo = res.userInfo;
+              wx.setStorageSync('userInfo', res.userInfo);
+            }
+          });
+        } else {
+          // 未授权状态
+          that.setData({
+            isLoggedIn: false,
+            userInfo: {
+              avatarUrl: '/images/default-avatar.svg',
+              nickName: '点击登录'
+            }
+          });
+        }
+      }
+    });
   },
 
   // 加载用户信息
   loadUserInfo: function() {
     try {
-      var userInfo = wx.getStorageSync('userInfo');
-      if (userInfo) {
+      const isLoggedIn = wx.getStorageSync('isLoggedIn');
+      const userInfo = wx.getStorageSync('userInfo');
+      
+      if (isLoggedIn && userInfo) {
         this.setData({
-          'userInfo.nickname': userInfo.nickname || '用户'
+          isLoggedIn: true,
+          userInfo: {
+            avatarUrl: userInfo.avatarUrl || '/images/default-avatar.svg',
+            nickName: userInfo.nickName || ''
+          }
         });
+        // 更新全局数据
+        getApp().globalData.userInfo = userInfo;
+        getApp().globalData.isLoggedIn = true;
       }
     } catch (e) {
       console.error('加载用户信息失败：', e);
@@ -154,6 +228,73 @@ Page({
     }
   },
 
+  isUserLoggedIn: function() {
+    // 从本地存储获取用户信息
+    const userInfo = wx.getStorageSync('userInfo');
+    // 检查是否有昵称或头像
+    return !!(userInfo && (userInfo.nickname || userInfo.avatar));
+  },
+
+  onUserInfoTap: function() {
+    if (this.data.isLoggedIn) {
+      // 已登录：跳转到用户详情页
+      wx.navigateTo({
+        url: '/pages/userInfo/userInfo'
+      });
+      return;
+    }
+    
+    // 显示明确的授权弹窗
+    wx.showModal({
+      title: '需要授权',
+      content: '我们需要获取您的用户信息',
+      confirmText: '去授权',
+      success: (res) => {
+        if (res.confirm) {
+          this.requestUserAuthorization();
+        }
+      }
+    });
+  },
+
+//授权请求
+requestUserAuthorization() {
+  wx.getUserProfile({
+    desc: '用于个人主页展示',
+    success: (res) => {
+      // 用户点击同意后才更新状态
+      this.setData({
+        isLoggedIn: true,
+        userInfo: res.userInfo
+      });
+    },
+    fail: (err) => {
+      console.error('授权拒绝:', err);
+      wx.showToast({ title: '授权已取消', icon: 'none' });
+    }
+  });
+},
+
+//处理登录成功
+  handleLoginSuccess: function(userInfo) {
+  this.setData({
+    isLoggedIn: true,
+    userInfo: {
+      avatarUrl: userInfo.avatarUrl,
+      nickName: userInfo.nickName
+    }
+  });
+  
+  // 保存用户信息到本地
+  wx.setStorageSync('userInfo', userInfo);
+  wx.setStorageSync('isLoggedIn', true);
+  
+  wx.showToast({
+    title: '登录成功',
+    icon: 'success'
+  });
+},
+
   // 加载目标设置数据
   loadGoalData: function() {
     try {
@@ -181,29 +322,6 @@ Page({
     } catch (e) {
       console.error('加载目标数据失败', e);
     }
-  },
-  
-  // 编辑昵称
-  onEditNickname: function() {
-    wx.showModal({
-      title: '修改昵称',
-      editable: true,
-      placeholderText: '请输入新昵称',
-      success: (res) => {
-        if (res.confirm && res.content) {
-          const userInfo = this.data.userInfo;
-          userInfo.nickname = res.content;
-          this.setData({
-            userInfo: userInfo
-          });
-          wx.setStorageSync('userInfo', userInfo);
-          wx.showToast({
-            title: '昵称已更新',
-            icon: 'success'
-          });
-        }
-      }
-    });
   },
   
   // 切换目标设置折叠面板
@@ -700,5 +818,29 @@ Page({
     wx.navigateTo({
       url: '/pages/userInfo/userInfo'
     });
+  },
+
+  //页面跳转
+  navigateToPage(e) {
+    const url = e.currentTarget.dataset.url;
+    if (url) {
+      wx.navigateTo({
+        url,
+        fail(err) {
+          console.error('页面跳转失败：', err);
+          wx.showToast({
+            title: '页面跳转失败',
+            icon: 'none',
+            duration: 2000
+          });
+        }
+      });
+    } else {
+      wx.showToast({
+        title: '目标页面地址无效',
+        icon: 'none',
+        duration: 2000
+      });
+    }
   },
 }) 

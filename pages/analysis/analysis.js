@@ -23,7 +23,31 @@ Page({
     },
     isLoading: true, 
     isRepairing: false, 
-    needRefresh: false 
+    needRefresh: false,
+    coreData: {
+      date: '',
+      steps: 0,
+      stepsPercent: 0,
+      duration: 0,
+      durationPercent: 0,
+      calories: 0,
+      caloriesPercent: 0,
+      weight: 0,
+      weightPercent: 0
+    },
+    exerciseChart: {
+      dateLabels: [],
+      stepsData: [],
+      durationData: [],
+      caloriesData: []
+    },
+    monthData: {},
+    pieData: [
+      { name: '有氧运动', value: 40, icon: '🏃‍♂️' },
+      { name: '无氧运动', value: 25, icon: '💪' },
+      { name: '身体塑形', value: 20, icon: '🧘' },
+      { name: '竞技运动', value: 15, icon: '🏀' }
+    ]
   },
 
   onLoad() {
@@ -124,6 +148,36 @@ Page({
         }, 50);
       }
     }
+    // 若无本地运动数据，自动生成模拟数据
+    let exerciseRecords = wx.getStorageSync('exerciseRecords') || {};
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    let hasData = false;
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+      const key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+      if (exerciseRecords[key] && exerciseRecords[key].length > 0) {
+        hasData = true;
+        break;
+      }
+    }
+    if (!hasData) {
+      // 生成本月每天的模拟数据
+      for (let day = 1; day <= daysInMonth; day++) {
+        const key = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+        // 随机生成步数、时长、卡路里
+        const steps = Math.floor(Math.random() * 8000 + 2000); // 2000~10000
+        const duration = Math.floor(Math.random() * 60 + 20); // 20~80分钟
+        const calories = Math.floor(Math.random() * 300 + 100); // 100~400千卡
+        exerciseRecords[key] = [{ steps, minutes: duration, caloriesBurned: calories }];
+      }
+      wx.setStorageSync('exerciseRecords', exerciseRecords);
+    }
+    this.updateCoreData();
+    this.updateExerciseChart();
+    this.updateExerciseCalendar();
   },
   preloadWeightRecords() {
     try {
@@ -448,10 +502,111 @@ Page({
       console.error('同步用户统计数据失败:', e);
     }
   },
+  updateCoreData() {
+    // 获取今日日期
+    const today = this.getCurrentDateString ? this.getCurrentDateString() : (new Date()).toISOString().slice(0, 10);
+    // 获取运动数据
+    let exerciseRecords = wx.getStorageSync('exerciseRecords') || {};
+    let todayRecords = exerciseRecords[today] || [];
+    let steps = 0;
+    let duration = 0;
+    let calories = 0;
+    todayRecords.forEach(record => {
+      steps += record.steps ? Number(record.steps) : 0;
+      duration += record.minutes ? Number(record.minutes) : (record.duration ? Number(record.duration) : 0);
+      calories += record.caloriesBurned ? Number(record.caloriesBurned) : 0;
+    });
+    // 体重
+    let weight = 0;
+    let weightRecords = wx.getStorageSync('weightRecordsArray') || [];
+    if (weightRecords.length > 0) {
+      weightRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+      weight = weightRecords[0].weight;
+    }
+    // 进度条百分比（可自定义目标值）
+    const stepsGoal = 10000;
+    const durationGoal = 60;
+    const caloriesGoal = 400;
+    const weightGoal = 50;
+    this.setData({
+      coreData: {
+        date: today,
+        steps,
+        stepsPercent: Math.min(100, Math.round(steps / stepsGoal * 100)),
+        duration,
+        durationPercent: Math.min(100, Math.round(duration / durationGoal * 100)),
+        calories,
+        caloriesPercent: Math.min(100, Math.round(calories / caloriesGoal * 100)),
+        weight,
+        weightPercent: weightGoal && weight ? Math.max(0, Math.min(100, Math.round((weightGoal / weight) * 100))) : 0
+      }
+    });
+  },
+  updateExerciseChart() {
+    // 获取本周日期
+    const now = new Date();
+    const weekDates = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+      weekDates.push(d);
+    }
+    const dateLabels = weekDates.map(d => `${d.getMonth() + 1}/${d.getDate()}`);
+    // 获取本地运动数据
+    let exerciseRecords = wx.getStorageSync('exerciseRecords') || {};
+    const stepsData = [];
+    const durationData = [];
+    const caloriesData = [];
+    weekDates.forEach(d => {
+      const key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+      const records = exerciseRecords[key] || [];
+      let steps = 0, duration = 0, calories = 0;
+      records.forEach(record => {
+        steps += record.steps ? Number(record.steps) : 0;
+        duration += record.minutes ? Number(record.minutes) : (record.duration ? Number(record.duration) : 0);
+        calories += record.caloriesBurned ? Number(record.caloriesBurned) : 0;
+      });
+      stepsData.push(steps);
+      durationData.push(duration);
+      caloriesData.push(calories);
+    });
+    this.setData({
+      exerciseChart: {
+        dateLabels,
+        stepsData,
+        durationData,
+        caloriesData
+      }
+    });
+  },
+  updateExerciseCalendar() {
+    // 临时写死一组monthData用于测试热力图
+    const monthData = {};
+    for (let day = 1; day <= 31; day++) {
+      monthData[day] = Math.floor(Math.random() * 100);
+    }
+    console.log('setData monthData', monthData);
+    this.setData({ monthData });
+    console.log('setData后页面data.monthData', this.data.monthData);
+  },
 
   switchPeriod(e) {
     const period = e.currentTarget.dataset.period;
     this.setData({ period });
     this.updateChartData(period);
+  },
+  onPhotoRecognize() {
+    wx.chooseImage({
+      count: 1,
+      sizeType: ['original', 'compressed'],
+      sourceType: ['album', 'camera'],
+      success: (res) => {
+        // 模拟识别结果
+        wx.showModal({
+          title: '识别结果',
+          content: '食物：香蕉\n热量：89千卡/100g',
+          showCancel: false
+        })
+      }
+    })
   },
 }) 
