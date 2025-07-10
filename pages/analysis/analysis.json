@@ -1,0 +1,6 @@
+{
+    "navigationBarTitleText": "数据分析",
+    "usingComponents": {
+        "weight-chart": "../../components/weight-chart/weight-chart"
+    }
+}

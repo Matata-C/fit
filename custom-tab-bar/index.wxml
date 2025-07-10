@@ -1,0 +1,14 @@
+<view class="tabbar">
+  <view class="tabbar-item {{selected === 0 ? 'tabbar-item-selected' : ''}}" bindtap="switchTab" data-index="0">
+    <text class="tabbar-text">首页</text>
+  </view>
+  <view class="tabbar-item {{selected === 1 ? 'tabbar-item-selected' : ''}}" bindtap="switchTab" data-index="1">
+    <text class="tabbar-text">分析</text>
+  </view>
+  <view class="tabbar-item {{selected === 2 ? 'tabbar-item-selected' : ''}}" bindtap="switchTab" data-index="2">
+    <text class="tabbar-text">成就</text>
+  </view>
+  <view class="tabbar-item {{selected === 3 ? 'tabbar-item-selected' : ''}}" bindtap="switchTab" data-index="3">
+    <text class="tabbar-text">我的</text>
+  </view>
+</view> 

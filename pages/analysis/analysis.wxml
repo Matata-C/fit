@@ -1,0 +1,92 @@
+<page-meta>
+  <navigation-bar title="数据分析" back="{{false}}" color="black" background="#FFF"></navigation-bar>
+</page-meta>
+<scroll-view class="scrollarea" scroll-y type="list">
+  <view class="container">
+    <!-- 数据修复状态指示 -->
+    <view class="repair-container" wx:if="{{isRepairing}}">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">数据修复中...</text>
+      <text class="repair-desc">首次加载可能需要较长时间</text>
+    </view>
+    
+    <!-- 加载状态指示 -->
+    <view class="loading-container" wx:elif="{{isLoading}}">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">数据加载中...</text>
+    </view>
+    
+    <view class="{{isLoading || isRepairing ? 'hidden-content' : ''}}">
+      <view class="title-section">
+        <view class="title">体重变化趋势</view>
+      </view>
+
+      <view class="tab-section">
+        <view class="tab-item {{period === 'week' ? 'active' : ''}}" bindtap="switchPeriod" data-period="week">
+          <text>一周</text>
+        </view>
+        <view class="tab-item {{period === 'month' ? 'active' : ''}}" bindtap="switchPeriod" data-period="month">
+          <text>一月</text>
+        </view>
+        <view class="tab-item {{period === 'all' ? 'active' : ''}}" bindtap="switchPeriod" data-period="all">
+          <text>全部</text>
+        </view>
+      </view>
+
+      <view class="chart-section">
+        <block wx:if="{{hasData}}">
+          <view class="chart-card">
+            <view class="chart-title">体重变化趋势</view>
+            <weight-chart dateLabels="{{chartOptions.dateLabels}}" weightData="{{chartOptions.weightData}}" height="{{chartOptions.height}}"></weight-chart>
+            <view class="weight-range" wx:if="{{weightData.length > 0}}">
+              <view class="weight-range-item">
+                <text class="range-label">起始</text>
+                <text class="range-value">{{Math.max.apply(null, weightData)}}kg</text>
+              </view>
+              <view class="weight-range-item">
+                <text class="range-label">最新</text>
+                <text class="range-value">{{Math.min.apply(null, weightData)}}kg</text>
+              </view>
+            </view>
+          </view>
+        </block>
+        <block wx:else>
+          <view class="no-data">
+            <text>暂无体重记录数据</text>
+            <view class="no-data-tip">在首页记录您的体重后再来查看</view>
+          </view>
+        </block>
+      </view>
+
+      <view class="stats-section" wx:if="{{hasData}}">
+        <view class="stat-item">
+          <view class="stat-value">{{statistics.totalLost}}kg</view>
+          <view class="stat-label">总计减重</view>
+        </view>
+        <view class="stat-item">
+          <view class="stat-value">{{statistics.avgSpeed}}kg/天</view>
+          <view class="stat-label">平均减重速度</view>
+        </view>
+        <view class="stat-item">
+          <view class="stat-value">{{statistics.daysToGoal}}天</view>
+          <view class="stat-label">预计达到目标</view>
+        </view>
+      </view>
+
+      <view class="tips-section">
+        <view class="tip-title">减重小贴士</view>
+        <view class="tip-content">
+          <view class="tip-item">
+            <text class="tip-text">健康减重速度为每周0.5-1kg，过快的减重可能不利于健康。</text>
+          </view>
+          <view class="tip-item">
+            <text class="tip-text">合理饮食和适量运动是维持健康体重的关键。</text>
+          </view>
+          <view class="tip-item">
+            <text class="tip-text">保持记录的习惯有助于长期管理体重。</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</scroll-view> 

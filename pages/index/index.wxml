@@ -1,0 +1,129 @@
+<!--index.wxml-->
+<page-meta>
+  <navigation-bar title="消耗记录" back="{{false}}" color="black" background="#FFF"></navigation-bar>
+</page-meta>
+
+<!-- 加载中显示 -->
+<view class="loading-container" wx:if="{{!pageReady}}">
+  <view class="loading-icon"></view>
+  <text class="loading-text">加载中...</text>
+</view>
+
+<!-- 主内容区域 -->
+<scroll-view class="scrollarea" scroll-y type="list" wx:if="{{pageReady}}">
+  <view class="container">
+    <!-- 今日消耗进度 -->
+    <view class="consumption-progress card">
+      <view class="card-title">今日消耗进度</view>
+      <view class="multi-progress-container">
+        <view class="progress-item">
+          <view class="progress-label">理论/目标</view>
+          <view class="progress-content">
+            <view class="progress-value">{{theoreticalValue}}千卡/{{targetValue}}千卡</view>
+            <view class="progress-bar-container">
+              <view class="progress-bar-wrapper">
+                <view class="theoretical-bar" style="width: {{targetValue > 0 ? (theoreticalValue / targetValue * 100 > 100 ? 100 : theoreticalValue / targetValue * 100) : 0}}%;"></view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 添加体重历史记录按钮，放在体重记录按钮旁边 -->
+    <view class="weight-buttons">
+      <view class="weight-record-btn" bindtap="showWeightDialog">记录体重</view>
+      <view class="weight-history-btn" bindtap="showWeightHistory">历史记录</view>
+    </view>
+
+    <!-- 显示今日体重记录 -->
+    <view class="weight-record card" wx:if="{{hasTodayWeight}}">
+      <view class="card-title">今日体重记录</view>
+      <view class="weight-value">{{todayWeight}} 公斤</view>
+    </view>
+
+    <!-- 体重进度 -->
+    <view class="weight-progress card" wx:if="{{weightPercentage !== 0}}">
+      <view class="card-title">总体体重进度</view>
+      <view class="progress-container">
+        <progress percent="{{weightPercentage}}" stroke-width="12" activeColor="#1aad19" backgroundColor="#eee"></progress>
+        <view class="progress-info">
+          <text>已减重: {{totalWeightLoss}} 公斤</text>
+          <text>目标: {{goalWeight}} 公斤</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 用户统计 -->
+    <view class="stats-card card">
+      <view class="card-title">我的统计</view>
+      <view class="stats-grid">
+        <view class="stat-item">
+          <view class="stat-value">{{userStats.days || 0}}</view>
+          <view class="stat-label">记录天数</view>
+        </view>
+        <view class="stat-item">
+          <view class="stat-value">{{userStats.averageConsumption || 0}}</view>
+          <view class="stat-label">平均消耗(千卡)</view>
+        </view>
+        <view class="stat-item">
+          <view class="stat-value">{{userStats.totalWeightLoss || 0}}</view>
+          <view class="stat-label">总减重(公斤)</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="action-buttons">
+      <button class="action-btn exercise-btn" bindtap="goToExercise">记录运动</button>
+      <button class="action-btn food-btn" bindtap="goToFood">记录饮食</button>
+    </view>
+
+    <!-- 每日健康小贴士 -->
+    <view class="daily-tip card">
+      <view class="card-title">每日健康小贴士</view>
+      <view class="tip-content">{{currentTip}}</view>
+    </view>
+
+    <!-- 体重记录对话框 -->
+    <view class="dialog-mask" wx:if="{{showWeightDialog}}">
+      <view class="dialog">
+        <view class="dialog-title">记录今日体重</view>
+        <view class="dialog-content">
+          <input type="digit" placeholder="请输入体重(公斤)" bindinput="weightInput" value="{{inputWeight}}" focus="{{showWeightDialog}}" />
+        </view>
+        <view class="dialog-footer">
+          <button class="dialog-btn cancel" bindtap="cancelWeightDialog">取消</button>
+          <button class="dialog-btn confirm" bindtap="saveWeight">保存</button>
+        </view>
+      </view>
+    </view>
+
+    <!-- 体重历史记录对话框 -->
+    <view class="dialog-mask" wx:if="{{showWeightHistoryDialog}}">
+      <view class="dialog history-dialog">
+        <view class="dialog-title">体重历史记录</view>
+        <view class="dialog-content history-content">
+          <block wx:if="{{weightHistoryRecords.length > 0}}">
+            <view class="history-list">
+              <view class="history-header">
+                <text class="header-date">日期</text>
+                <text class="header-weight">体重(公斤)</text>
+                <text class="header-action">操作</text>
+              </view>
+              <view class="history-item" wx:for="{{weightHistoryRecords}}" wx:key="date">
+                <text class="item-date">{{item.date}}</text>
+                <text class="item-weight">{{item.weight}}</text>
+                <view class="item-delete" bindtap="deleteWeightRecord" data-index="{{index}}">删除</view>
+              </view>
+            </view>
+          </block>
+          <view class="no-records" wx:else>暂无体重记录</view>
+        </view>
+        <view class="dialog-footer">
+          <button class="dialog-btn confirm" bindtap="closeWeightHistory">关闭</button>
+        </view>
+      </view>
+    </view>
+  </view>
+</scroll-view>
